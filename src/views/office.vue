@@ -39,7 +39,6 @@ import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 let stats = new Stats();
 let route = useRoute();
-// document.body.appendChild(stats.domElement);
 let controls;
 let officeWall;
 let officeRoof;
@@ -47,6 +46,7 @@ let websocket;
 let loadingProgress;
 let info;
 let objects = [];
+let models = {}; // 存放模型
 let model;
 let modelTag;
 let cssRender;
@@ -85,101 +85,53 @@ websocket.addEventListener('open', () => {
 websocket.addEventListener('error', () => {
   console.log('WebSocket connect error')
 })
-
-// 存放模型
-let models = {}
 websocket.addEventListener('message', (event) => {
-    if (event.data === 'success') {
-        return
-    }
-    const data = JSON.parse(event.data)
-    if(!data){
-        return
-    }
-    // 获取设备id
-    let ccsDevId = data.ccsDevId
-    // 检查对应模型是否创建
-    let currModel = models[ccsDevId]
-    if(!currModel){
-        // 如果模型不存在，那就创建模型
-        const geometry = new Three.BoxGeometry(0.05, 0.05, 0.05);
-        const map = createCanvasTags(data)
-        const material = new Three.MeshBasicMaterial({map:map})
-        currModel = new Three.Mesh(geometry, material)
-        currModel.rotation.y = Math.PI
-        currModel.position.set(data.smoothedPositionX, data.smoothedPositionY, data.smoothedPositionZ)
-        modelTag = createModelTag(currModel,data)
-        modelTag.rotation.y = Math.PI
-        modelTag.visible = true;
-        // 添加模型
-        models[ccsDevId] = currModel
-        scene.add(currModel);
-    }
-    let move = currModel.position.x !==data.smoothedPositionX || currModel.position.y !== data.smoothedPositionY || currModel.position.z !== data.smoothedPositionZ
-    if (move){
-        // 如果坐标发生变化，那么走动画
-        let tweenTarget = new TWEEN.Tween(currModel.position)
-        tweenTarget.to({
-            x: data.smoothedPositionX,
-            y: data.smoothedPositionY,
-            z: data.smoothedPositionZ
-        }, 100)
-        tweenTarget.easing(TWEEN.Easing.Quadratic.Out)
-        tweenTarget.onUpdate(() => {
-        })
-        tweenTarget.start();
-        // 移动后更新当前坐标
-        // currModel.position.set(data.smoothedPositionX, data.smoothedPositionY, data.smoothedPositionZ)
-        models[ccsDevId] = currModel
-    }
+  if (event.data === 'success') {
+    return
+  }
+  const data = JSON.parse(event.data)
+  if(!data){
+    return
+  }
+  // 获取设备id
+  let ccsDevId = data.ccsDevId
+  // 检查对应模型是否创建
+  let currModel = models[ccsDevId]
+  if(!currModel){
+    // 如果模型不存在，那就创建模型
+    const geometry = new Three.BoxGeometry(0.05, 0.05, 0.05);
+    const map = createCanvasTags(data)
+    const material = new Three.MeshBasicMaterial({map:map})
+    currModel = new Three.Mesh(geometry, material)
+    currModel.rotation.y = Math.PI
+    currModel.position.set(data.smoothedPositionX, data.smoothedPositionY, data.smoothedPositionZ)
+    modelTag = createModelTag(currModel,data)
+    modelTag.rotation.y = Math.PI
+    modelTag.visible = true;
+    // 添加模型
+    models[ccsDevId] = currModel
+    scene.add(currModel);
+  }
+  let move = currModel.position.x !==data.smoothedPositionX || currModel.position.y !== data.smoothedPositionY || currModel.position.z !== data.smoothedPositionZ
+  if (move){
+    // 如果坐标发生变化，那么走动画
+    let tweenTarget = new TWEEN.Tween(currModel.position)
+    tweenTarget.to({
+      x: data.smoothedPositionX,
+      y: data.smoothedPositionY,
+      z: data.smoothedPositionZ
+    }, 100)
+    tweenTarget.easing(TWEEN.Easing.Quadratic.Out)
+    tweenTarget.onUpdate(() => {
+    })
+    tweenTarget.start();
+    // 移动后更新当前坐标
+    models[ccsDevId] = currModel
+  }else{
+    currModel.position.set(data.smoothedPositionX, data.smoothedPositionY, data.smoothedPositionZ)
+  }
 })
 
-
-// websocket.addEventListener('message', (event) => {
-//   if (event.data === 'success') {
-//     return
-//   }
-//   const data = JSON.parse(event.data)
-//   if (data.length > 0) {
-//     data.forEach((objectData, index) => {
-//       if (index >= objects.length) {
-//         const geometry = new Three.BoxGeometry(0.05, 0.05, 0.05);
-//         // const geometry = new Three.PlaneGeometry(0.1,0.1)
-//         const map = createCanvasTags(objectData)
-//         const material = new Three.MeshBasicMaterial({map:map});
-//         model = new Three.Mesh(geometry, material);
-//         model.rotation.y = Math.PI
-//         model.position.set(objectData.smoothedPositionX, objectData.smoothedPositionY, objectData.smoothedPositionZ);
-//         modelTag = createModelTag(model,objectData)
-//         modelTag.rotation.y = Math.PI
-//         modelTag.visible = true;
-//         scene.add(model);
-//         objects.push({obj: model, target: objectData})
-//       }
-//     })
-//     data.forEach((item, index) => {
-//       const object = objects[index];
-//       if (object) {
-//         let tweenTarget = new TWEEN.Tween(object.obj.position)
-//         tweenTarget.to({
-//           x: item.smoothedPositionX,
-//           y: item.smoothedPositionY,
-//           z: item.smoothedPositionZ
-//         }, 100)
-//         tweenTarget.easing(TWEEN.Easing.Quadratic.Out)
-//         tweenTarget.onUpdate(() => {
-//         })
-//         tweenTarget.start();
-//       }
-//     })
-//   }else{
-//     objects.forEach((objectData,index) => {
-//       scene.remove(objectData);
-//     });
-//     objects = [];
-//   }
-//
-// })
 
 /**
  * 创建人物3D标签
