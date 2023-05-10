@@ -30,14 +30,16 @@
 import * as Three from "three";
 import {TWEEN} from "../plugins/libs/tween.module.min";
 import {nextTick, onMounted, reactive, ref,computed} from "vue";
-import {useRoute} from 'vue-router'
+import {useRoute} from 'vue-router';
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
-import {CSS3DObject} from 'three/examples/jsm/renderers/CSS3DRenderer'
+import {CSS3DObject} from 'three/examples/jsm/renderers/CSS3DRenderer';
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import {DRACOLoader} from "three/examples/jsm/loaders/DRACOLoader";
 import {CSS3DRenderer} from "three/examples/jsm/renderers/CSS3DRenderer";
+import Stats from "three/examples/jsm/libs/stats.module.js";
+let stats = new Stats();
 let route = useRoute();
-
+// document.body.appendChild(stats.domElement);
 let controls;
 let officeWall;
 let officeRoof;
@@ -63,9 +65,6 @@ loader.setDRACOLoader(dracoLoader);
 
 let id = computed(() => route.query.id)
 
-// http.get('/warehousePointImage/indoor/position/'+id.value).then(res=>{
-//     console.log('获取当前场景的点位设备：',res)
-// });
 
 /**
  * 初始化相机事件
@@ -79,7 +78,6 @@ const initCamera = () => {
 /**
  *创建websocket心跳机制事件
  * **/
-
 websocket = new WebSocket(import.meta.env.VITE_API_BASE_WS_PATH, [id.value]);
 websocket.addEventListener('open', () => {
   console.log('WebSocket connect success')
@@ -94,12 +92,10 @@ websocket.addEventListener('message', (event) => {
     if (event.data === 'success') {
         return
     }
-
     const data = JSON.parse(event.data)
     if(!data){
         return
     }
-
     // 获取设备id
     let ccsDevId = data.ccsDevId
     // 检查对应模型是否创建
@@ -115,15 +111,11 @@ websocket.addEventListener('message', (event) => {
         modelTag = createModelTag(currModel,data)
         modelTag.rotation.y = Math.PI
         modelTag.visible = true;
-
         // 添加模型
         models[ccsDevId] = currModel
         scene.add(currModel);
     }
-
-
-
-    let move = currModel.position.x !==data.smoothedPositionX || currModel.position.y != data.smoothedPositionY || currModel.position.z != data.smoothedPositionZ
+    let move = currModel.position.x !==data.smoothedPositionX || currModel.position.y !== data.smoothedPositionY || currModel.position.z !== data.smoothedPositionZ
     if (move){
         // 如果坐标发生变化，那么走动画
         let tweenTarget = new TWEEN.Tween(currModel.position)
@@ -136,9 +128,8 @@ websocket.addEventListener('message', (event) => {
         tweenTarget.onUpdate(() => {
         })
         tweenTarget.start();
-
         // 移动后更新当前坐标
-        currModel.position.set(data.smoothedPositionX, data.smoothedPositionY, data.smoothedPositionZ)
+        // currModel.position.set(data.smoothedPositionX, data.smoothedPositionY, data.smoothedPositionZ)
         models[ccsDevId] = currModel
     }
 })
@@ -335,7 +326,8 @@ document.querySelector('#css3dRender').appendChild(cssRender.domElement)
  * 控制渲染器的基本属性
  * **/
 const render = () => {
-  TWEEN.update()
+  TWEEN.update();
+  stats.update();
   renderer.render(scene, camera);
   controls && controls.update();
   cssRender.render(scene,camera)
