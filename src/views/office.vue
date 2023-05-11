@@ -79,10 +79,10 @@ const initCamera = () => {
  *创建websocket心跳机制事件
  * **/
 websocket = new WebSocket(import.meta.env.VITE_API_BASE_WS_PATH, [id.value]);
-websocket.addEventListener('open', () => {
+websocket.addEventListener('open', (event) => {
   console.log('WebSocket connect success')
 })
-websocket.addEventListener('error', () => {
+websocket.addEventListener('error', (event) => {
   console.log('WebSocket connect error')
 })
 websocket.addEventListener('message', (event) => {
@@ -106,6 +106,15 @@ websocket.addEventListener('message', (event) => {
     currModel.rotation.y = Math.PI
     currModel.position.set(data.smoothedPositionX, data.smoothedPositionY, data.smoothedPositionZ)
     modelTag = createModelTag(currModel,data)
+
+
+    const label = createLabel(ccsDevId);
+    label.position.y = 0.06; // 标签在物体上方一定距离
+
+    // console.log('标签：',label)
+
+    // currModel.add(label);
+
     modelTag.rotation.y = Math.PI
     modelTag.visible = true;
     // 添加模型
@@ -127,8 +136,6 @@ websocket.addEventListener('message', (event) => {
     tweenTarget.start();
     // 移动后更新当前坐标
     models[ccsDevId] = currModel
-  }else{
-    currModel.position.set(data.smoothedPositionX, data.smoothedPositionY, data.smoothedPositionZ)
   }
 })
 
@@ -148,6 +155,34 @@ const createModelTag = (model,objectData) => {
   css3dRender.scale.set(0.001, 0.001, 0.001)
   css3dRender.position.copy(model.position)
   return css3dRender
+}
+
+
+// 创建标签的函数
+const createLabel =(text)=> {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  context.font = '16px Arial';
+  const width = context.measureText(text).width;
+
+  canvas.width = width;
+  canvas.height = 25;
+
+  context.fillStyle = '#000000';
+  context.globalAlpha = 0.8;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = '#ffffff';
+  context.fillText(text, 5, 18);
+  context.textAlign = 'center';
+  // context.textBaseline = 'middle';
+
+  const texture = new Three.CanvasTexture(canvas);
+  const material = new Three.SpriteMaterial({ map: texture });
+  const sprite = new Three.Sprite(material);
+
+  sprite.scale.set(0.15, 0.07, 0.07); // 标签的比例
+  return sprite;
 }
 
 /**
