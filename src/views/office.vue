@@ -78,7 +78,7 @@ const initCamera = () => {
 /**
  *创建websocket心跳机制事件
  * **/
-websocket = new WebSocket(import.meta.env.VITE_API_BASE_WS_PATH, [id.value]);
+websocket = new WebSocket(import.meta.env.VITE_API_BASE_WS_PATH+`/ws/office3d`, [id.value]);
 websocket.addEventListener('open', (event) => {
   console.log('WebSocket connect success')
 })
@@ -108,7 +108,7 @@ websocket.addEventListener('message', (event) => {
     modelTag = createModelTag(currModel,data)
 
 
-    const label = createLabel(ccsDevId);
+    const label = createLabel(data.pointName);
     label.position.y = 0.06; // 标签在物体上方一定距离
 
     // console.log('标签：',label)
@@ -162,20 +162,22 @@ const createModelTag = (model,objectData) => {
 const createLabel =(text)=> {
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
-  context.font = '16px Arial';
+  context.font = '28px Arial';
   const width = context.measureText(text).width;
 
   canvas.width = width;
-  canvas.height = 25;
+  canvas.height = 20;
 
   context.fillStyle = '#000000';
-  context.globalAlpha = 0.8;
+  context.globalAlpha = 0.6;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   context.fillStyle = '#ffffff';
-  context.fillText(text, 5, 18);
-  context.textAlign = 'center';
-  // context.textBaseline = 'middle';
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  const x = canvas.width / 2;
+  const y = canvas.height / 1.8;
+  context.fillText(text, x, y);
 
   const texture = new Three.CanvasTexture(canvas);
   const material = new Three.SpriteMaterial({ map: texture });
