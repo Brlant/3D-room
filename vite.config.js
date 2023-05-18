@@ -26,7 +26,7 @@ export default defineConfig({
         port: 5173,
         proxy: {
             '/api': {
-                target: target.websocketYj,
+                target: target.websocket,
                 changeOrigin: true,
             }
         }
