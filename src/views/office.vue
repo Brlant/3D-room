@@ -198,7 +198,7 @@ const createCanvasTags = (objectData)=>{
   };
   if(objectData){
     obj.name = objectData.pointName || '待标识'
-    obj.color = objectData.color
+    obj.color = objectData.color || '#ffffff'
   }
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
