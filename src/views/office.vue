@@ -113,7 +113,7 @@ websocket.addEventListener('message', (event) => {
 
     // console.log('标签：',label)
 
-    // currModel.add(label);
+    currModel.add(label);
 
     modelTag.rotation.y = Math.PI
     modelTag.visible = true;
@@ -168,15 +168,15 @@ const createLabel =(text)=> {
   canvas.width = width;
   canvas.height = 20;
 
-  context.fillStyle = '#000000';
-  context.globalAlpha = 0.6;
+  context.fillStyle = "rgba(0, 0, 0, 0.3)";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  context.fillStyle = '#ffffff';
+
   context.textAlign = "center";
   context.textBaseline = "middle";
   const x = canvas.width / 2;
   const y = canvas.height / 1.8;
+  context.fillStyle = '#ffffff';
   context.fillText(text, x, y);
 
   const texture = new Three.CanvasTexture(canvas);
@@ -198,7 +198,7 @@ const createCanvasTags = (objectData)=>{
   };
   if(objectData){
     obj.name = objectData.pointName || '待标识'
-    obj.color = objectData.color || '#ffffff'
+    obj.color = '#676262'
   }
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -210,11 +210,11 @@ const createCanvasTags = (objectData)=>{
 
   // 设置字体样式
   ctx.font = 'bold 20px Arial';
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.fillText(`${obj.name}`, canvas.width / 2, canvas.height / 2);
+  // ctx.fillText(`${obj.name}`, canvas.width / 2, canvas.height / 2);
   const dataURL = canvas.toDataURL('image/png');
   const img = new Image();
   img.src = dataURL;
@@ -414,19 +414,19 @@ const initLight = () => {
   const light1 = new Three.DirectionalLight(0xffffff, 1)
   light1.position.set(-10, 20, 0)
   light1.castShadow = true
-  scene.add(light1)
+  // scene.add(light1)
   const light2 = new Three.DirectionalLight(0xffffff, 1)
   light2.position.set(0, 20, -10)
   light2.castShadow = true
-  scene.add(light2)
+  // scene.add(light2)
   const light3 = new Three.DirectionalLight(0xffffff, 0.5)
   light3.position.set(10, 20, 0)
   light3.castShadow = true
-  scene.add(light3)
+  // scene.add(light3)
   const light4 = new Three.DirectionalLight(0xffffff, 0.5)
   light4.position.set(0, 20, 10)
   light4.castShadow = true
-  scene.add(light4)
+  // scene.add(light4)
 }
 
 /**
